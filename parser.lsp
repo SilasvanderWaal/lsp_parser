@@ -131,11 +131,11 @@
 ;;=====================================================================
 
 (defun is-id (str)
-;; *** TO BE DONE ***
+   (and (alpha-char-p (char str 0)) (every #'alphanumericp str))
 )
 
 (defun is-number (str)
-   
+   (every #'digit-char-p str)
 )
 
 ;;=====================================================================
@@ -184,9 +184,12 @@
 ; lexeme - returns the lexeme from (token lexeme)(reader)
 ;;=====================================================================
 
-(defun token  (state) ;; *** TO BE DONE ***
+(defun token  (state) 
+   (first (pstate-lookahead state))
 )
-(defun lexeme (state) ;; *** TO BE DONE ***
+
+(defun lexeme (state)
+   (second (pstate-lookahead state))
 )
 
 ;;=====================================================================

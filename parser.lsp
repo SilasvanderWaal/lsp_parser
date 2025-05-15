@@ -197,11 +197,18 @@
 ;;=====================================================================
 
 (defun symtab-add (state id)
-   (setf (pstate-symtab state) (cons id (pstate-symtab state)))
+    (if (not(eq (token state) 'ID))
+        (synerr1 state)
+    )
+    (if (symtab-member state id)
+        (semerr1 state)
+        (setf (pstate-symtab state) (cons id (pstate-symtab state)))
+
+    )
 )
 
 (defun symtab-member (state id)
-   (find id (pstate-symtab state))
+    (find id (pstate-symtab state))
 )
 
 (defun symtab-display (state)
@@ -281,46 +288,46 @@
 ; <factor>        --> ( <expr> ) | <operand>
 ; <operand>       --> id | number
 ;;=====================================================================
-(defun expr(state)
-    (term state)
-    (if (eq (token state) 'PLUS)
-        (
-            (match state 'PLUS)
-            (expr state)
-        )
+
+(defun id-exists (state)
+    ( if ( not ( symtab-member state ( lexeme state ) ) )
+        ( semerr2 state )
     )
 )
 
-(defun term(state)
-    (factor state)
-    (if (eq (token state) 'STAR)
-        (
-            (match state 'STAR)
-            (term state)
-        )
+(defun assign-state (state)
+    (if (eq (token state) 'ID)
+        (id-exists state)
     )
-)
 
-(defun factor-aux(state)
-    (match state 'LPAREN)
+    (match state 'ID)
+    (match state 'ASSIGN)
     (expr state)
-    (match state 'RPAREN)
 )
 
-(defun factor(state)
-    (if (eq (token state) 'LPAREN)
-        (factor-aux state)
-        (operand state)
+(defun stat (state)
+    (assign-stat state)
+)
+
+(defun stat-list-aux (state)
+    (match state 'SEMICOLON)
+    (stat-list state)
+)
+
+(defun stat-list (state)
+    (stat state)
+    (if (eq (token state) 'SEMICOLON)
+        (state-list-aux state)
     )
 )
 
-(defun operand (state)
-    (cond
-        ((eq (token state) 'ID) ((id-exists) (match state 'ID)))
-        ((eq (token state) 'NUMBER) (match state 'NUMBER))
-        ((t) (synerr3 state))
-    )
+(defun stat-part (state)
+    (match state 'BEGIN)
+    (stat-list state)
+    (match state 'END)
+    (match state 'DOT)
 )
+
 ;;=====================================================================
 ; <var-part>     --> var <var-dec-list>
 ; <var-dec-list> --> <var-dec> | <var-dec><var-dec-list>
@@ -348,7 +355,10 @@
 (defun id-list-aux (state) (match state 'COMMA) (id-list state))
 
 (defun id-list (state)
+    (symtab-add state (lexeme state))
+
     (match state 'ID)
+
     (if (eq (token state) 'COMMA)
         (id-list-aux state)
     )
@@ -428,7 +438,7 @@
 ;;=====================================================================
 
 (defun parse-all ()
-   (mapcar #'parse 
+   (mapcar #'parse
       (directory "testfiles/*.pas"))
 )
 

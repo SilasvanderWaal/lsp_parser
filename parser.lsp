@@ -197,11 +197,11 @@
 ;;=====================================================================
 
 (defun symtab-add (state id)
-;; *** TO BE DONE ***
+   (setf (pstate-symtab state) (cons id (pstate-symtab state)))
 )
 
 (defun symtab-member (state id)
-;; *** TO BE DONE ***
+   (find id (pstate-symtab state))
 )
 
 (defun symtab-display (state)

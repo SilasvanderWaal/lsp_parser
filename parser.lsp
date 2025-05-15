@@ -292,13 +292,13 @@
 ;;=====================================================================
 
 (defun typ (state)
-    (cond   ((eq (first pstate-lookahead state) 'REAL)
+    (cond   ((eq (token state) 'REAL)
                 (match state 'REAL)
             )
-            ((eq (first pstate-lookahead state) 'INTEGER)
+            ((eq (token state) 'INTEGER)
                 (match state 'INTEGER)
             )
-            ((eq (first pstate-lookahead state) 'BOOLEAN)
+            ((eq (token state) 'BOOLEAN)
                 (match state 'BOOLEAN)
             )
             ((t)
@@ -311,7 +311,7 @@
 
 (defun id-list (state)
     (match state 'ID)
-    (if (eq (first pstate-lookahead state) 'COMMA)
+    (if (eq (token state) 'COMMA)
         (id-list-aux state)
     )
 )
@@ -325,7 +325,7 @@
 
 (defun var-dec-list (state)
     (var-dec state)
-    (if (eq (first pstate-lookahead state) 'ID)
+    (if (eq (token state) 'ID)
         (var-dec-list state)
     )
 )
@@ -404,7 +404,7 @@
 ; THE PARSER - test a single file
 ;;=====================================================================
 
-;;(parse "testfiles/testok1.pas")
+;(parse "testfiles/testok1.pas")
 
 ;;=====================================================================
 ; THE PARSER - end of code

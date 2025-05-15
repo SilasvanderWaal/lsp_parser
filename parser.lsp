@@ -281,8 +281,46 @@
 ; <factor>        --> ( <expr> ) | <operand>
 ; <operand>       --> id | number
 ;;=====================================================================
+(defun expr(state)
+    (term state)
+    (if (eq (token state) 'PLUS)
+        (
+            (match state 'PLUS)
+            (expr state)
+        )
+    )
+)
 
+(defun term(state)
+    (factor state)
+    (if (eq (token state) 'STAR)
+        (
+            (match state 'STAR)
+            (term state)
+        )
+    )
+)
 
+(defun factor-aux(state)
+    (match state 'LPAREN)
+    (expr state)
+    (match state 'RPAREN)
+)
+
+(defun factor(state)
+    (if (eq (token state) 'LPAREN)
+        (factor-aux state)
+        (operand state)
+    )
+)
+
+(defun operand (state)
+    (cond
+        ((eq (token state) 'ID) ((id-exists) (match state 'ID)))
+        ((eq (token state) 'NUMBER) (match state 'NUMBER))
+        ((t) (synerr3 state))
+    )
+)
 ;;=====================================================================
 ; <var-part>     --> var <var-dec-list>
 ; <var-dec-list> --> <var-dec> | <var-dec><var-dec-list>

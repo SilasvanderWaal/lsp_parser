@@ -288,24 +288,27 @@
 ; <factor>        --> ( <expr> ) | <operand>
 ; <operand>       --> id | number
 ;;=====================================================================
+(defun expr-aux(state)
+    (match state 'PLUS)
+    (expr state)
+)
 
 (defun expr(state)
     (term state)
     (if (eq (token state) 'PLUS)
-        (
-            (match state 'PLUS)
-            (expr state)
-        )
+        (expr-aux state)
     )
+)
+
+(defun term-aux(state)
+    (match state 'STAR)
+    (term state)
 )
 
 (defun term(state)
     (factor state)
     (if (eq (token state) 'STAR)
-        (
-            (match state 'STAR)
-            (term state)
-        )
+        (term-aux state)
     )
 )
 

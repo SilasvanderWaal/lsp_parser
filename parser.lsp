@@ -106,18 +106,18 @@
          ((string=   lexeme "tempty") 'TEMPTY)
          ((string=   lexeme "error")   'ERROR)
          ((string=   lexeme "type") 'TYPE)
-         ((string=   lexeme  "$") '$)
+         ((string=   lexeme  "$") 'DOLLAR)
          ((string=   lexeme   "(")  'LPAREN)
          ((string=   lexeme   ")")  'RPAREN)
-         ((string=   lexeme   "*") '*)
-         ((string=   lexeme   "+")  '+)
-         ((string=   lexeme   ",")  ',)
-         ((string=   lexeme   "-")  '-)
-         ((string=   lexeme   ".")  '.)
-         ((string=   lexeme   "/")  '/)
-         ((string=   lexeme   ":")  ':)
+         ((string=   lexeme   "*") 'STAR)
+         ((string=   lexeme   "+")  'PLUS)
+         ((string=   lexeme   ",")  'COMMA)
+         ((string=   lexeme   "-")  'DASH)
+         ((string=   lexeme   ".")  'DOT)
+         ((string=   lexeme   "/")  'SLASH)
+         ((string=   lexeme   ":")  'COLON)
          ((string=   lexeme   ";")  'SEMICOLON)
-         ((string=   lexeme   "=")  '=)
+         ((string=   lexeme   "=")  'EQUAL)
          ((string=   lexeme "")	        'EOF)
          ((is-id     lexeme)            'ID)
          ((is-number lexeme)            'NUM)
@@ -184,7 +184,7 @@
 ; lexeme - returns the lexeme from (token lexeme)(reader)
 ;;=====================================================================
 
-(defun token  (state) 
+(defun token  (state)
    (first (pstate-lookahead state))
 )
 
@@ -282,7 +282,6 @@
 ; <operand>       --> id | number
 ;;=====================================================================
 
-;; *** TO BE DONE ***
 
 ;;=====================================================================
 ; <var-part>     --> var <var-dec-list>
@@ -292,13 +291,64 @@
 ; <type>         --> integer | real | boolean
 ;;=====================================================================
 
-;; *** TO BE DONE ***
+(defun type (state)
+    (cond   ((eq (first pstate-lookahead) 'REAL)
+                (match state 'REAL)
+            )
+            ((eq (first pstate-lookahead) 'INTEGER)
+                (match state 'INTEGER)
+            )
+            ((eq (first pstate-lookahead) 'BOOLEAN)
+                (match state 'BOOLEAN)
+            )
+            (t)
+                (synerr2 state)
+            )
+    )
+)
+
+(defun id-list-aux (state) (match state 'COMMA) (id-list state))
+
+(defun id-list (state)
+    (match state 'ID)
+    (if (eq (first pstate-lookahead state) 'COMMA)
+        (id-list-aux state)
+    )
+)
+
+(defun var-dec (state)
+    (id-list state)
+    (match state 'COLON)
+    (type state)
+    (match state 'SEMICOLON)
+)
+
+(defun var-dec-list (state)
+    (var-dec state)
+    (if (eq (first pstate-lookahead state) 'ID)
+        (var-dec-list state)
+    )
+)
+
+(defun var-part (state)
+    (match state 'VAR)
+    (var-dev-list state)
+)
 
 ;;=====================================================================
 ; <program-header>
 ;;=====================================================================
 
-;; *** TO BE DONE ***
+(defun program-header (state)
+    (match state 'PROGRAM)
+    (match state 'ID)
+    (match state 'LPAREN)
+    (match state 'INPUT)
+    (match state 'COMMA)
+    (match state 'OUTPUT)
+    (match state 'RPAREN)
+    (match state 'SEMICOLON)
+)
 
 ;;=====================================================================
 ; <program> --> <program-header><var-part><stat-part>

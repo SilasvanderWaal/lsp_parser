@@ -291,17 +291,17 @@
 ; <type>         --> integer | real | boolean
 ;;=====================================================================
 
-(defun type (state)
-    (cond   ((eq (first pstate-lookahead) 'REAL)
+(defun typ (state)
+    (cond   ((eq (first pstate-lookahead state) 'REAL)
                 (match state 'REAL)
             )
-            ((eq (first pstate-lookahead) 'INTEGER)
+            ((eq (first pstate-lookahead state) 'INTEGER)
                 (match state 'INTEGER)
             )
-            ((eq (first pstate-lookahead) 'BOOLEAN)
+            ((eq (first pstate-lookahead state) 'BOOLEAN)
                 (match state 'BOOLEAN)
             )
-            (t)
+            ((t)
                 (synerr2 state)
             )
     )
@@ -319,7 +319,7 @@
 (defun var-dec (state)
     (id-list state)
     (match state 'COLON)
-    (type state)
+    (typ state)
     (match state 'SEMICOLON)
 )
 
@@ -332,7 +332,7 @@
 
 (defun var-part (state)
     (match state 'VAR)
-    (var-dev-list state)
+    (var-dec-list state)
 )
 
 ;;=====================================================================
@@ -390,16 +390,15 @@
 ;;=====================================================================
 
 (defun parse-all ()
-
-;; *** TO BE DONE ***
-
+   (mapcar #'parse 
+      (directory "testfiles/*.pas"))
 )
 
 ;;=====================================================================
 ; THE PARSER - test all files
 ;;=====================================================================
 
-;; (parse-all)
+;;(parse-all)
 
 ;;=====================================================================
 ; THE PARSER - test a single file

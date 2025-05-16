@@ -198,7 +198,7 @@
 
 (defun symtab-add (state id)
     (if (not(eq (token state) 'ID))
-        (synerr1 state)
+        (synerr1 state 'ID)
     )
     (if (symtab-member state id)
         (semerr1 state)
@@ -288,6 +288,13 @@
 ; <factor>        --> ( <expr> ) | <operand>
 ; <operand>       --> id | number
 ;;=====================================================================
+
+(defun id-exists (state)
+    ( if ( not ( symtab-member state ( lexeme state ) ) )
+        ( semerr2 state )
+    )
+)
+
 (defun expr-aux(state)
     (match state 'PLUS)
     (expr state)
@@ -327,17 +334,12 @@
 
 (defun operand (state)
     (cond
-        ((eq (token state) 'ID) ((id-exists) (match state 'ID)))
+        ((eq (token state) 'ID) (id-exists state) (match state 'ID))
         ((eq (token state) 'NUMBER) (match state 'NUMBER))
-        ((t) (synerr3 state))
+        (t (synerr3 state))
     )
 )
 
-(defun id-exists (state)
-    ( if ( not ( symtab-member state ( lexeme state ) ) )
-        ( semerr2 state )
-    )
-)
 
 (defun assign-state (state)
     (if (eq (token state) 'ID)
@@ -350,7 +352,7 @@
 )
 
 (defun stat (state)
-    (assign-stat state)
+    (assign-state state)
 )
 
 (defun stat-list-aux (state)
@@ -390,7 +392,7 @@
             ((eq (token state) 'BOOLEAN)
                 (match state 'BOOLEAN)
             )
-            ((t)
+            (t
                 (synerr2 state)
             )
     )

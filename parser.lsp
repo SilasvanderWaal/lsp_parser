@@ -202,13 +202,13 @@
     )
     (if (symtab-member state id)
         (semerr1 state)
-        (setf (pstate-symtab state) (cons id (pstate-symtab state)))
+        (setf (pstate-symtab state) (append (pstate-symtab state) (list id)))
 
     )
 )
 
 (defun symtab-member (state id)
-    (find id (pstate-symtab state))
+    (find id (pstate-symtab state) :test #'equal)
 )
 
 (defun symtab-display (state)
@@ -248,6 +248,12 @@
 (defun semerr2 (state)
     (format t "*** Semantic error: ~S not declared.~%"
           (lexeme state))
+    (setf (pstate-status state) 'NOTOK)
+)
+
+(defun semerr3 (state symbol)
+    (format t "*** Semantic error: found ~8S expected ~S.~%"
+          (lexeme state) symbol)
     (setf (pstate-status state) 'NOTOK)
 )
 
@@ -335,7 +341,7 @@
 (defun operand (state)
     (cond
         ((eq (token state) 'ID) (id-exists state) (match state 'ID))
-        ((eq (token state) 'NUMBER) (match state 'NUMBER))
+        ((eq (token state) 'NUM) (match state 'NUM))
         (t (synerr3 state))
     )
 )
@@ -363,7 +369,7 @@
 (defun stat-list (state)
     (stat state)
     (if (eq (token state) 'SEMICOLON)
-        (state-list-aux state)
+        (stat-list-aux state)
     )
 )
 
@@ -445,12 +451,28 @@
 )
 
 ;;=====================================================================
+; <EOF-validator>
+;;=====================================================================
+(defun EOF-validator-aux (state)
+   (semerr3 state 'EOF)
+   (get-token state)
+   (EOF-validator state)
+)
+
+(defun EOF-validator (state)
+    (if (not(eq (token state) 'EOF))
+        (EOF-validator-aux state)
+    )
+)
+
+;;=====================================================================
 ; <program> --> <program-header><var-part><stat-part>
 ;;=====================================================================
 (defun program (state)
    (program-header state)
    (var-part       state)
    (stat-part      state)
+   (EOF-validator  state)
    (symtab-display state)
 )
 
@@ -485,14 +507,14 @@
 
 (defun parse-all ()
    (mapcar #'parse
-      (directory "testfiles/*.pas"))
+      (sort (directory "testfiles/*.pas") #'string-lessp :key #'namestring))
 )
 
 ;;=====================================================================
 ; THE PARSER - test all files
 ;;=====================================================================
 
-;;(parse-all)
+(parse-all)
 
 ;;=====================================================================
 ; THE PARSER - test a single file
